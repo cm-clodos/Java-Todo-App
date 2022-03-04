@@ -25,20 +25,55 @@ public class HalloTest {
     }*/
 
     @Test
-    public void testHello_should_return200OK() throws URISyntaxException, IOException, InterruptedException {
+    public void getTodos_should_returnContentTypeTodosList() throws URISyntaxException, IOException, InterruptedException {
+        //Zuerst einen request erstellen
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI("http://localhost:4567/todos"))
                 .GET()
                 .header("accept", "application/json")
                 .build();
-
+        //danach Client erstellen der den zuvor erstellten request sendet und den response als HttpResponse abspeichert.
         final HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-//checkt das Header content type = application/json;charset=utf-8
+
+        //nun kann der erhaltene Response überprüft/getestet werden...
+        //checkt das Header content type = application/json;charset=utf-8
         Assert.assertEquals("application/json;charset=utf-8", response.headers().firstValue("content-type").get());
 
+        // das enthaltene JSON deserialiseren und TodoItem Objekte in List abfüllen. Kann Anzahl items getestet werden
         final List<TodoItem> todos = new JSONSerializer().deserialize(response.body(), new TypeReference<List<TodoItem>>() {});
 
-        Assert.assertEquals(5, todos.size());
+        Assert.assertEquals(4, todos.size());
+    }
+    @Test
+    public void deleteTodos_should_ReturnContentTypeStatusCodeTodosList() throws URISyntaxException, IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:4567/todos/1"))
+                .DELETE()
+                .header("accept", "application/json")
+                .build();
+
+
+
+        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+        Assert.assertEquals("application/json;charset=utf-8", response.headers().firstValue("content-type").get());
+        Assert.assertEquals(200, response.statusCode());
+
+        final List<TodoItem> todos = new JSONSerializer().deserialize(response.body(), new TypeReference<List<TodoItem>>() {});
+        Assert.assertEquals(4, todos.size());
+       // todos.forEach(System.out::println);
+
+
+
+
+        for (TodoItem todo: todos
+             ) {
+            if (todo.getId() == 2L){
+                System.out.println(todo);
+            }
+        }
+
+
     }
 }
 
