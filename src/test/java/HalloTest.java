@@ -42,10 +42,10 @@ public class HalloTest {
         // das enthaltene JSON deserialiseren und TodoItem Objekte in List abfüllen. Kann Anzahl items getestet werden
         final List<TodoItem> todos = new JSONSerializer().deserialize(response.body(), new TypeReference<List<TodoItem>>() {});
 
-        Assert.assertEquals(4, todos.size());
+        Assert.assertEquals(5, todos.size());
     }
     @Test
-    public void deleteTodos_should_ReturnContentTypeStatusCodeTodosList() throws URISyntaxException, IOException, InterruptedException {
+    public void deleteTodos_should_ReturnContentTypeStatusCode200() throws URISyntaxException, IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI("http://localhost:4567/todos/1"))
                 .DELETE()
@@ -59,21 +59,20 @@ public class HalloTest {
         Assert.assertEquals("application/json;charset=utf-8", response.headers().firstValue("content-type").get());
         Assert.assertEquals(200, response.statusCode());
 
-        final List<TodoItem> todos = new JSONSerializer().deserialize(response.body(), new TypeReference<List<TodoItem>>() {});
-        Assert.assertEquals(4, todos.size());
-       // todos.forEach(System.out::println);
 
 
+    }
+    @Test
+    public void deleteTodos_should_ReturnStatusCode406() throws URISyntaxException, IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:4567/todos/0"))
+                .DELETE()
+                .header("accept", "application/json")
+                .build();
 
+        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-        for (TodoItem todo: todos
-             ) {
-            if (todo.getId() == 2L){
-                System.out.println(todo);
-            }
-        }
-
-
+        Assert.assertEquals(406, response.statusCode());
     }
 }
 

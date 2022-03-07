@@ -1,3 +1,5 @@
+import com.fasterxml.jackson.core.type.TypeReference;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +15,7 @@ public class Main {
                         TodoItem.create("Einkaufen", 3L), TodoItem.create("Reise buchen", 4L),
                         TodoItem.create("Wäsche waschen", 5L))
                 );
+        System.out.println(todos.size());
 
 
         get("/todos","application/json", (req, res) -> {
@@ -25,21 +28,42 @@ public class Main {
 
         // curl -i -X DELETE -H 'content-type: application/json' http://localhost:4567/todos/:id
         //erstellt einen DELETE Aufruf auf ein Item mit der id xy
-        delete("/todos/:id", (req, res) -> {
+        delete("/todos/:id","application/json", (req, res) -> {
             req.headers("accept").equalsIgnoreCase("application/json;charset=utf-8");
-            //Lies die Id aus dem get
+            //Liest die Id aus dem get
             Long id = Long.valueOf(req.params().get(":id"));
+            int oldItemsSize = todos.size();
             //content type verändern der Response als info für den client welches format
             res.header("content-type", "application/json;charset=utf-8");
-// Durchsucht die ArrayList: id die aus Get gelesen wird  mit der gleichen ID vom Long des Todoitems
+            // Durchsucht die ArrayList: id die aus Get gelesen wird mit der gleichen ID vom Long des Todoitems
             //Wenn gleiche ID dann gibt die compare 0 zurück.--> folge item wird aus arrayList entfernt.
             todos.removeIf(n -> (Long.compare(n.getId(),id)==0));
+            int newItemsSize = todos.size();
+            System.out.println(newItemsSize);
 
+            if (oldItemsSize == newItemsSize){
+                res.status(406);
+            }
 
-            //return new JSONSerializer().serialize(todos);
-            String deleted = "Item with ID: "+ id + " deleted";
-            return deleted;
+            return new JSONSerializer().serialize(todos);
+
         });
+        //curl -i -X POST -H 'content-type: application/json' http://localhost:4567/todos/
+        post("/todos/", "application/json", (req,res) -> {
+            req.headers("accept").equalsIgnoreCase("application/json;charset=utf-8");
+            res.header("content-type", "application/json;charset=utf-8");
+
+            //Neues Item wird erstellt
+            TodoItem newItem = TodoItem.create("Hausaufgaben", 6L);
+            System.out.println(newItem);
+
+            todos.add(newItem);
+
+            return new JSONSerializer().serialize(todos);
+
+
+        });
+
 
     }
 }
