@@ -74,5 +74,7 @@ public class HalloTest {
 
         Assert.assertEquals(406, response.statusCode());
     }
+
+
 }
 

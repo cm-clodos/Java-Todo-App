@@ -11,9 +11,9 @@ public class Main {
         //http://localhost:4567/todos
         List<TodoItem>todos = new ArrayList<>(
                 Arrays.asList(
-                        TodoItem.create("Kochen",1L),TodoItem.create("Radeln",2L),
-                        TodoItem.create("Einkaufen", 3L), TodoItem.create("Reise buchen", 4L),
-                        TodoItem.create("Wäsche waschen", 5L))
+                        TodoItem.create(1L, "Kochen"),TodoItem.create(2L, "Radeln"),
+                        TodoItem.create(3L, "Einkaufen"), TodoItem.create(4L, "Reise buchen"),
+                        TodoItem.create(5L, "Wäsche waschen"))
                 );
         System.out.println(todos.size());
 
@@ -53,8 +53,8 @@ public class Main {
             req.headers("accept").equalsIgnoreCase("application/json;charset=utf-8");
             res.header("content-type", "application/json;charset=utf-8");
 
-            //Neues Item wird erstellt
-            TodoItem newItem = TodoItem.create("Hausaufgaben", 6L);
+            //Neues Item wird erstellt nur mit ID
+            TodoItem newItem = new TodoItem();
             System.out.println(newItem);
 
             todos.add(newItem);
