@@ -17,7 +17,7 @@ public class Main {
                 );
         System.out.println(todos.size());
 
-
+        //curl http://localhost:4567/todos
         get("/todos","application/json", (req, res) -> {
             req.headers("accept").equalsIgnoreCase("application/json;charset=utf-8");
                 //content type verändern der Response als info für den client welches format
@@ -30,7 +30,7 @@ public class Main {
         //erstellt einen DELETE Aufruf auf ein Item mit der id xy
         delete("/todos/:id","application/json", (req, res) -> {
             req.headers("accept").equalsIgnoreCase("application/json;charset=utf-8");
-            //Liest die Id aus dem get
+            //Liest die Id aus der URL
             Long id = Long.valueOf(req.params().get(":id"));
             int oldItemsSize = todos.size();
             //content type verändern der Response als info für den client welches format
@@ -49,13 +49,17 @@ public class Main {
 
         });
         //curl -i -X POST -H 'content-type: application/json' http://localhost:4567/todos/
+        //curl -i -d "description=Auto reparieren" -X POST -H 'content-type: application/json' http://localhost:4567/todos/
         post("/todos/", "application/json", (req,res) -> {
             req.headers("accept").equalsIgnoreCase("application/json;charset=utf-8");
             res.header("content-type", "application/json;charset=utf-8");
 
-            //Neues Item wird erstellt nur mit ID
+         //  String param = req.params("description");
+
             TodoItem newItem = new TodoItem();
             System.out.println(newItem);
+            //wie wird ein tudu nicht auf dem server erzeugt sondern nur die ID und die Description kommt via curl data siehe Kommentar unten
+            //curl -d '{"description":"auto reparieren"}' -H "Content-Type: application/json" -X POST http://localhost:4567/todos/
 
             todos.add(newItem);
 

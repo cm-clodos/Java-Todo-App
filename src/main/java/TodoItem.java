@@ -18,6 +18,11 @@ public class TodoItem {
     public TodoItem(){
         this.id =(long) (counter++ + 1);
     }
+    public TodoItem(String description){
+        this.id =(long) (counter++ + 1);
+        this.description = description;
+    }
+
 
     public static TodoItem create(Long id, String description) {
         TodoItem todoItem = new TodoItem();
@@ -25,6 +30,8 @@ public class TodoItem {
         todoItem.id = id;
         return todoItem;
     }
+
+
 
     public Long getId() {
         return id;
