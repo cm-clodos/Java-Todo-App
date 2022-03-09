@@ -48,21 +48,20 @@ public class Main {
             return new JSONSerializer().serialize(todos);
 
         });
-        //curl -i -X POST -H 'content-type: application/json' http://localhost:4567/todos/
-        //curl -i -d "description=Auto reparieren" -X POST -H 'content-type: application/json' http://localhost:4567/todos/
+        //curl -X POST http://localhost:4567/todos/ -H 'content-type: application/json' -d '{"description":"auto reparieren"}'
         post("/todos/", "application/json", (req,res) -> {
             req.headers("accept").equalsIgnoreCase("application/json;charset=utf-8");
             res.header("content-type", "application/json;charset=utf-8");
 
-         //  String param = req.params("description");
-
-            TodoItem newItem = new TodoItem();
+            //in curl request body die description als json mitgeben
+            // request body deserialisieren (json -> Objekt)
+            TodoItem newItem = new JSONSerializer().deserialize(req.body(), new TypeReference<TodoItem>() {});
             System.out.println(newItem);
-            //wie wird ein tudu nicht auf dem server erzeugt sondern nur die ID und die Description kommt via curl data siehe Kommentar unten
-            //curl -d '{"description":"auto reparieren"}' -H "Content-Type: application/json" -X POST http://localhost:4567/todos/
+            System.out.println(req.body());
+
 
             todos.add(newItem);
-
+            //gibt response json von todos
             return new JSONSerializer().serialize(todos);
 
 
