@@ -51,6 +51,22 @@ public class TodoController {
             return null;
         });
 
+        get("/todos", "application/json", (req, res) -> {
+            String query = req.queryParams("description");
+            System.out.println(query);
+
+            for (var item : todos) {
+                if (item.description.contains(query)) {
+                    res.status(200);
+                    return new JSONSerializer().serialize(item);
+                }
+            }
+            //null = statuscode 404 =Not found
+            return null;
+
+
+        });
+
         // curl -i -X DELETE -H 'content-type: application/json' http://localhost:4567/todos/:id
         //erstellt einen DELETE Aufruf auf ein Item mit der id xy
         delete("/todos/:id", "application/json", (req, res) -> {

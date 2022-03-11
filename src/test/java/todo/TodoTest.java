@@ -1,5 +1,6 @@
 package todo;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Test;
@@ -97,6 +98,39 @@ public class TodoTest {
         Assert.assertNotNull(todo.id);
 
         //...get request auf die ID und da
+    }
+
+    @Test
+    public void getTodowithDescription_should_returnTodoWithSameDescription() throws URISyntaxException, IOException, InterruptedException {
+
+        final TodoItem todoItem = TodoItem.create(200L, "Einkaufen für Geburtstag");
+
+        HttpRequest requestNewTodo = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:4567/todos"))
+                .POST(HttpRequest.BodyPublishers.ofString(new JSONSerializer().serialize(todoItem)))
+                .header("accept", "application/json")
+                .build();
+        final HttpResponse<String> response = HttpClient.newHttpClient().send(requestNewTodo, HttpResponse.BodyHandlers.ofString());
+
+
+        //Zuerst einen request erstellen
+        HttpRequest requestTodoSearch = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:4567/todos?description=Einkaufen"))
+                .GET()
+                .header("accept", "application/json")
+                .build();
+        //danach Client erstellen der den zuvor erstellten request sendet und den response als HttpResponse abspeichert.
+        final HttpResponse<String> searchResponse = HttpClient.newHttpClient().send(requestTodoSearch, HttpResponse.BodyHandlers.ofString());
+
+        //nun kann der erhaltene Response überprüft/getestet werden...
+        //checkt das Header content type = application/json;charset=utf-8
+        Assert.assertEquals("application/json;charset=utf-8", response.headers().firstValue("content-type").get());
+
+        //überprüfe
+        final TodoItem todo = new JSONSerializer().deserialize(response.body(), new TypeReference<>() { });
+        boolean stringInclude = todo.description.contains("Einkaufen");
+
+        Assert.assertTrue(stringInclude);
     }
 
 
