@@ -42,10 +42,10 @@ public class HalloTest {
         // das enthaltene JSON deserialiseren und TodoItem Objekte in List abfüllen. Kann Anzahl items getestet werden
         final List<TodoItem> todos = new JSONSerializer().deserialize(response.body(), new TypeReference<List<TodoItem>>() {});
 
-        Assert.assertEquals(5, todos.size());
+        Assert.assertTrue("Should have any items", 0 < todos.size());
     }
     @Test
-    public void deleteTodos_should_ReturnContentTypeStatusCode200() throws URISyntaxException, IOException, InterruptedException {
+    public void deleteTodo_should_deleteAndNoMoreRead() throws URISyntaxException, IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(new URI("http://localhost:4567/todos/1"))
                 .DELETE()
@@ -59,21 +59,42 @@ public class HalloTest {
         Assert.assertEquals("application/json;charset=utf-8", response.headers().firstValue("content-type").get());
         Assert.assertEquals(200, response.statusCode());
 
+        HttpRequest verifyDeletedRequest = HttpRequest.newBuilder()
+                .uri(new URI("http://localhost:4567/todos/1"))
+                .GET()
+                .header("accept", "application/json")
+                .build();
+        final HttpResponse<String> verifyDeletedResponse = HttpClient.newHttpClient().send(verifyDeletedRequest, HttpResponse.BodyHandlers.ofString());
 
+        Assert.assertEquals("application/json;charset=utf-8", response.headers().firstValue("content-type").get());
+        Assert.assertEquals(404, verifyDeletedResponse.statusCode());
 
     }
     @Test
-    public void deleteTodos_should_ReturnStatusCode406() throws URISyntaxException, IOException, InterruptedException {
+    public void createTodo_should_return202CreatedAndReadIsPossible() throws URISyntaxException, IOException, InterruptedException {
+        //gibt hardcodetes item mit
+        final TodoItem todoItem = TodoItem.create(100L, "putzen");
+
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(new URI("http://localhost:4567/todos/0"))
-                .DELETE()
+                .uri(new URI("http://localhost:4567/todos"))
+                .POST(HttpRequest.BodyPublishers.ofString(new JSONSerializer().serialize(todoItem)))
                 .header("accept", "application/json")
                 .build();
+        final HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-        HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        Assert.assertEquals("application/json;charset=utf-8", response.headers().firstValue("content-type").get());
+        //status created
+        Assert.assertEquals(202, response.statusCode());
 
-        Assert.assertEquals(406, response.statusCode());
+        //überprüfe
+        final TodoItem todo = new JSONSerializer().deserialize(response.body(), new TypeReference<>() { });
+
+        Assert.assertEquals("putzen", todo.description);
+        Assert.assertNotNull(todo.id);
+
+        //...get request auf die ID und da
     }
+
 
 
 }
