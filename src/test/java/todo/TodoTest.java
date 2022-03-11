@@ -1,6 +1,10 @@
+package todo;
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Test;
+import shared.infra.JSONSerializer;
+import todo.model.TodoItem;
 
 import java.io.IOException;
 import java.net.URI;
@@ -10,7 +14,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
 
-public class HalloTest {
+public class TodoTest {
 
    /* @Test
     public void getHelloWorld_returnsText() throws IOException, InterruptedException {
@@ -39,7 +43,7 @@ public class HalloTest {
         //checkt das Header content type = application/json;charset=utf-8
         Assert.assertEquals("application/json;charset=utf-8", response.headers().firstValue("content-type").get());
 
-        // das enthaltene JSON deserialiseren und TodoItem Objekte in List abfüllen. Kann Anzahl items getestet werden
+        // das enthaltene JSON deserialiseren und tudu model TodoItem Objekte in List abfüllen. Kann Anzahl items getestet werden
         final List<TodoItem> todos = new JSONSerializer().deserialize(response.body(), new TypeReference<List<TodoItem>>() {});
 
         Assert.assertTrue("Should have any items", 0 < todos.size());

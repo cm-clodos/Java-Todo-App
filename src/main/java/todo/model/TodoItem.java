@@ -1,5 +1,4 @@
-import java.util.ArrayList;
-import java.util.List;
+package todo.model;
 
 public class TodoItem {
     public static int  counter;
@@ -7,13 +6,6 @@ public class TodoItem {
     public Long id;
 
 
-   /* public static TodoItem create(String description, Long id) {
-        TodoItem todoItem = new TodoItem();
-        todoItem.description = description;
-        todoItem.id = id;
-
-        return todoItem;
-    }*/
 
     public TodoItem(){
         this.id =(long) (counter++ + 1);
@@ -39,7 +31,7 @@ public class TodoItem {
 
     @Override
     public String toString() {
-        return "TodoItem{" +
+        return "todo.model.TodoItem{" +
                 "description='" + description + '\'' +
                 ", id=" + id +
                 '}';
