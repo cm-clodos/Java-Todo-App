@@ -20,17 +20,11 @@ public class TodoController {
 
 
     public TodoController(Service server, boolean isTest) {
-
+        // auswählen ob Test
         TodoService todoService = new TodoService(isTest? new InMemoryRepository(): new SQliteRepository());
 
-        //http://localhost:4567/todos
-
         //curl http://localhost:4567/todos
-       /* server.get("/todos", "application/json", (req, res) -> {
-            //content type verändern der Response als info für den client welches format
-            res.header("content-type", "application/json;charset=utf-8");
-            return new JSONSerializer().serialize(todoService.getAllTodos());
-        });*/
+
 
 
         //curl http://localhost:4567/todos/1
@@ -49,19 +43,16 @@ public class TodoController {
 
        server.get("/todos", "application/json", (req, res) -> {
             if (req.queryParams("description") != null) {
-                String query = req.queryParams("description").toLowerCase(Locale.ROOT);
-                ArrayList<TodoItem> foundTodos = new ArrayList<>();
-                for (TodoItem todoItem :todoService.getAllTodos()){
-                    if (todoItem.description.toLowerCase(Locale.ROOT).contains(query)){
-                        foundTodos.add(todoItem);
-                    }
-                }
-                res.status(200);
-               return new JSONSerializer().serialize(foundTodos);
 
-            }else{
+                if (todoService.getFilterTodo(req.queryParams("description").toLowerCase(Locale.ROOT)).size() == 0) {
+                    res.status(404);
+                    return new JSONSerializer().serialize(todoService.getFilterTodo(req.queryParams("description").toLowerCase(Locale.ROOT)));
+                } else {
+                    res.status(200);
+                    return new JSONSerializer().serialize(todoService.getFilterTodo(req.queryParams("description").toLowerCase(Locale.ROOT)));
+                }
+            }   res.status(200);
                 return new JSONSerializer().serialize(todoService.getAllTodos());
-            }
 
         });
 
@@ -86,12 +77,14 @@ public class TodoController {
             // request body deserialisieren (json -> Objekt)
             TodoItem newItem = new JSONSerializer().deserialize(req.body(), new TypeReference<TodoItem>() {
             });
-            System.out.println(newItem);
-            System.out.println(req.body());
 
+            Boolean created = todoService.createItem(newItem);
 
-            todoService.getAllTodos().add(newItem);
-            res.status(202);
+            if (created){
+                res.status(202);
+            }else {
+                res.status(400);
+            }
 
             //gibt newItem als String zurück
             return new JSONSerializer().serialize(newItem);
