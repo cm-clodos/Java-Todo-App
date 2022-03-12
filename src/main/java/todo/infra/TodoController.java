@@ -4,86 +4,84 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.LoggerFactory;
 import shared.infra.JSONSerializer;
+import spark.Service;
 import todo.model.TodoItem;
+import todo.service.TodoService;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Locale;
 
 import static spark.Spark.*;
 
 
 public class TodoController {
 
-    public TodoController() {
+
+    public TodoController(Service server, boolean isTest) {
+
+        TodoService todoService = new TodoService(isTest? new InMemoryRepository(): new SQliteRepository());
 
         //http://localhost:4567/todos
-        List<TodoItem> todos = new ArrayList<>(
-                Arrays.asList(
-                        TodoItem.create(1L, "Kochen"), TodoItem.create(2L, "Radeln"),
-                        TodoItem.create(3L, "Einkaufen"), TodoItem.create(4L, "Reise buchen"),
-                        TodoItem.create(5L, "Wäsche waschen"))
-        );
-        System.out.println(todos.size());
 
         //curl http://localhost:4567/todos
-        get("/todos", "application/json", (req, res) -> {
+       /* server.get("/todos", "application/json", (req, res) -> {
             //content type verändern der Response als info für den client welches format
             res.header("content-type", "application/json;charset=utf-8");
+            return new JSONSerializer().serialize(todoService.getAllTodos());
+        });*/
 
-            return new JSONSerializer().serialize(todos);
-        });
 
         //curl http://localhost:4567/todos/1
-        get("/todos/:id", "application/json", (req, res) -> {
+       server.get("/todos/:id", "application/json", (req, res) -> {
 
             final Long idToRead = Long.valueOf(req.params("id"));
+            TodoItem item = todoService.getById(idToRead);
 
-            for (var item : todos) {
-                if (item.id.equals(idToRead)) {
-                    res.status(200);
-                    return new JSONSerializer().serialize(item);
-                }
-            }
-            //null = 404 statuscode
-            return null;
+       res.status(200);
+       return new JSONSerializer().serialize(item);
         });
 
-        get("/todos", "application/json", (req, res) -> {
-            String query = req.queryParams("description");
-            System.out.println(query);
 
-            for (var item : todos) {
-                if (item.description.contains(query)) {
-                    res.status(200);
-                    return new JSONSerializer().serialize(item);
+
+        // curl http://localhost:4567/todos?description=einkaufen
+
+       server.get("/todos", "application/json", (req, res) -> {
+            if (req.queryParams("description") != null) {
+                String query = req.queryParams("description").toLowerCase(Locale.ROOT);
+                ArrayList<TodoItem> foundTodos = new ArrayList<>();
+                for (TodoItem todoItem :todoService.getAllTodos()){
+                    if (todoItem.description.toLowerCase(Locale.ROOT).contains(query)){
+                        foundTodos.add(todoItem);
+                    }
                 }
-            }
-            //null = statuscode 404 =Not found
-            return null;
+                res.status(200);
+               return new JSONSerializer().serialize(foundTodos);
 
+            }else{
+                return new JSONSerializer().serialize(todoService.getAllTodos());
+            }
 
         });
 
         // curl -i -X DELETE -H 'content-type: application/json' http://localhost:4567/todos/:id
         //erstellt einen DELETE Aufruf auf ein Item mit der id xy
-        delete("/todos/:id", "application/json", (req, res) -> {
+       server.delete("/todos/:id", "application/json", (req, res) -> {
             //content type verändern der Response als info für den client welches format
             //Liest die Id aus der URL
             Long idToDelete = Long.valueOf(req.params().get(":id"));
-            int oldItemsSize = todos.size();
 
-            // Durchsucht die ArrayList: id die aus Get gelesen wird mit der gleichen ID vom Long des Todoitems
-            //Wenn gleiche ID dann gibt die compare 0 zurück.--> folge item wird aus arrayList entfernt.
-            todos.removeIf(todoItem -> todoItem.id.equals(idToDelete));
-
-            return new JSONSerializer().serialize(todos);
+           if ( todoService.removeItemById(idToDelete)){
+               res.status(200);
+           }else {
+               res.status(404);
+           }
+            return new JSONSerializer().serialize(todoService.getAllTodos());
 
         });
         //curl -X POST http://localhost:4567/todos -H 'content-type: application/json' -d '{"description":"auto reparieren"}'
-        post("/todos", "application/json", (req, res) -> {
+        server.post("/todos", "application/json", (req, res) -> {
 
             // request body deserialisieren (json -> Objekt)
             TodoItem newItem = new JSONSerializer().deserialize(req.body(), new TypeReference<TodoItem>() {
@@ -92,7 +90,7 @@ public class TodoController {
             System.out.println(req.body());
 
 
-            todos.add(newItem);
+            todoService.getAllTodos().add(newItem);
             res.status(202);
 
             //gibt newItem als String zurück
@@ -101,7 +99,7 @@ public class TodoController {
 
         });
         //filter setzt für alle response den header content-type
-        before(((request, response) -> {
+      server.before(((request, response) -> {
             //content type verändern der Response als info für den client welches format
             response.header("content-type", "application/json;charset=utf-8");
         }));
@@ -109,7 +107,7 @@ public class TodoController {
         //exception handler
         //handelt exceptions.... logger erstellen der alle exception ins loggerfile schreibt
 
-        exception(Exception.class, (exception, request, response) -> {
+      server.exception(Exception.class, (exception, request, response) -> {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             exception.printStackTrace(pw);
@@ -118,7 +116,10 @@ public class TodoController {
             response.body("");
             response.status(HttpStatus.INTERNAL_SERVER_ERROR_500);
         });
+        server.awaitInitialization();
+
     }
+
 
 }
 
