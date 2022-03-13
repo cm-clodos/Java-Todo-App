@@ -36,14 +36,19 @@ public class TodoService {
 
     public List<TodoItem> getFilterTodo(String query) {
         ArrayList<TodoItem> foundTodos = new ArrayList<>();
-        for (TodoItem todoItem : this.getAllTodos()){
-            if (todoItem.description.toLowerCase(Locale.ROOT).contains(query)){
-                foundTodos.add(todoItem);
-                return foundTodos;
+        if (!query.trim().isEmpty()) {
+            for (TodoItem todoItem : getAllTodos()) {
+                if (todoItem.description.toLowerCase(Locale.ROOT).contains(query)) {
+                    foundTodos.add(todoItem);
+
+                }
             }
         }
         return foundTodos;
-    }
+        }
+
+
+
 
     public Boolean createItem(TodoItem item) {
 

@@ -46,7 +46,7 @@ public class TodoController {
 
                 if (todoService.getFilterTodo(req.queryParams("description").toLowerCase(Locale.ROOT)).size() == 0) {
                     res.status(404);
-                    return new JSONSerializer().serialize(todoService.getFilterTodo(req.queryParams("description").toLowerCase(Locale.ROOT)));
+                    return new JSONSerializer().serialize("No Todo with this description was found!");
                 } else {
                     res.status(200);
                     return new JSONSerializer().serialize(todoService.getFilterTodo(req.queryParams("description").toLowerCase(Locale.ROOT)));
