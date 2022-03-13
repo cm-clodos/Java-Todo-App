@@ -23,11 +23,11 @@ public class TodoController {
         // auswählen ob Test
         TodoService todoService = new TodoService(isTest? new InMemoryRepository(): new SQliteRepository());
 
-        //curl http://localhost:4567/todos
+        //curl -i http://localhost:4567/todos
 
 
 
-        //curl http://localhost:4567/todos/1
+        //curl -i http://localhost:4567/todos/1
        server.get("/todos/:id", "application/json", (req, res) -> {
 
             final Long idToRead = Long.valueOf(req.params("id"));
@@ -39,7 +39,7 @@ public class TodoController {
 
 
 
-        // curl http://localhost:4567/todos?description=einkaufen
+        // curl -i http://localhost:4567/todos?description=einkaufen
 
        server.get("/todos", "application/json", (req, res) -> {
             if (req.queryParams("description") != null) {
@@ -71,7 +71,7 @@ public class TodoController {
             return new JSONSerializer().serialize(todoService.getAllTodos());
 
         });
-        //curl -X POST http://localhost:4567/todos -H 'content-type: application/json' -d '{"description":"auto reparieren"}'
+        //curl -i -X POST http://localhost:4567/todos -H 'content-type: application/json' -d '{"description":"auto reparieren"}'
         server.post("/todos", "application/json", (req, res) -> {
 
             // request body deserialisieren (json -> Objekt)
@@ -84,12 +84,11 @@ public class TodoController {
                 res.status(202);
             }else {
                 res.status(400);
+                return new JSONSerializer().serialize("No Description insert!");
             }
 
             //gibt newItem als String zurück
             return new JSONSerializer().serialize(newItem);
-
-
         });
         //filter setzt für alle response den header content-type
       server.before(((request, response) -> {

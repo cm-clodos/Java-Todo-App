@@ -47,13 +47,17 @@ public class TodoService {
 
     public Boolean createItem(TodoItem item) {
 
-        int sizeBefore = this.getAllTodos().size();
-        this.getAllTodos().add(item);
-        int sizeAfter = this.getAllTodos().size();
+        if(item.description.trim().isEmpty()){
+            return false;
+        }else {
+            int sizeBefore = this.getAllTodos().size();
+            this.getAllTodos().add(item);
+            int sizeAfter = this.getAllTodos().size();
 
-        if (sizeAfter > sizeBefore){
+            if (sizeAfter > sizeBefore){
 
-            return true;
+                return true;
+            }
         }
 
         return false;
