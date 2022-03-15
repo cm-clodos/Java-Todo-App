@@ -42,14 +42,15 @@ public class TodoController {
         // curl -i http://localhost:4567/todos?description=einkaufen
 
        server.get("/todos", "application/json", (req, res) -> {
-            if (req.queryParams("description") != null) {
+           String filter = "description";
+            if (req.queryParams(filter) != null) {
 
-                if (todoService.getFilterTodo(req.queryParams("description").toLowerCase(Locale.ROOT)).size() == 0) {
+                if (todoService.getFilterTodo(req.queryParams(filter).toLowerCase(Locale.ROOT)).size() == 0) {
                     res.status(404);
                     return new JSONSerializer().serialize("No Todo with this description was found!");
                 } else {
                     res.status(200);
-                    return new JSONSerializer().serialize(todoService.getFilterTodo(req.queryParams("description").toLowerCase(Locale.ROOT)));
+                    return new JSONSerializer().serialize(todoService.getFilterTodo(req.queryParams(filter).toLowerCase(Locale.ROOT)));
                 }
             }   res.status(200);
                 return new JSONSerializer().serialize(todoService.getAllTodos());
